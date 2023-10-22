@@ -16,17 +16,17 @@ router = APIRouter(
 convert_days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 
 
-convert_days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
-
 class search_sort_options(str, Enum):
     customer_name = "customer_name"
     item_sku = "item_sku"
     line_item_total = "line_item_total"
     timestamp = "timestamp"
 
+
 class search_sort_order(str, Enum):
     asc = "asc"
     desc = "desc"   
+
 
 @router.get("/search/", tags=["search"])
 def search_orders(
@@ -60,17 +60,37 @@ def search_orders(
     Your results must be paginated, the max results you can return at any
     time is 5 total line items.
     """
-
+    with db.engine.begin() as connection:
+      where_message = ""
+      if customer_name != "" and potion_sku != "":
+        where_message = f"WHERE carts.customer ILIKE '%{customer_name}%' AND cart_items.sku ILIKE '%{potion_sku}%'"
+      elif customer_name != "":
+        where_message = f"WHERE carts.customer ILIKE '%{customer_name}%'"
+      elif potion_sku != "":
+        where_message = f"WHERE cart_items.sku ILIKE '%{potion_sku}%'"
+        cart_items = connection.execute(sqlalchemy.text(f"""
+            SELECT
+              cart_items.item_id as line_item_id,
+              cart_items.sku as item_sku,
+              carts.customer as customer_name,
+              cart_items.quantity as line_item_total,
+              global_inventory_transactions.created_at as timestamp
+            FROM cart_items
+            JOIN carts on cart_items.cart_id = carts.cart_id
+            JOIN global_inventory_transactions on carts.global_inventory_transaction_id = global_inventory_transactions.id
+            {where_message}
+            ORDER BY {sort_col} {sort_order}
+            """)).fetchall()
     return {
         "previous": "",
         "next": "",
         "results": [
             {
-                "line_item_id": 1,
-                "item_sku": "1 oblivion potion",
-                "customer_name": "Scaramouche",
-                "line_item_total": 50,
-                "timestamp": "2021-01-01T00:00:00Z",
+                "line_item_id": cart_items.line_item_id,
+                "item_sku": cart_items.item_sku,
+                "customer_name": cart_items.customer_name,
+                "line_item_total": cart_items.line_item_total,
+                "timestamp": cart_items.timestamp,
             }
         ],
     }
