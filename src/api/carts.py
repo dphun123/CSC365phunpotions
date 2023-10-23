@@ -62,13 +62,14 @@ def search_orders(
     time is 5 total line items.
     """
     with db.engine.begin() as connection:
+
       where_message = ""
       if customer_name != "" and potion_sku != "":
-        where_message = f"WHERE carts.customer ILIKE '{customer_name}' AND cart_items.sku ILIKE '{potion_sku}'"
+        where_message = f"WHERE customer_name ILIKE {customer_name} AND item_sku ILIKE {potion_sku}"
       elif customer_name != "":
-        where_message = f"WHERE carts.customer ILIKE '{customer_name}'"
+        where_message = f"WHERE customer_name ILIKE {customer_name}"
       elif potion_sku != "":
-        where_message = f"WHERE cart_items.sku ILIKE '{potion_sku}'"
+        where_message = f"WHERE item_sku ILIKE {potion_sku}"
       cart_items = connection.execute(sqlalchemy.text(f"""
           SELECT
             cart_items.items_id as line_item_id,

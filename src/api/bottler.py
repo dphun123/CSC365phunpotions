@@ -15,6 +15,7 @@ router = APIRouter(
 )
 
 colors = ["red", "green", "blue", "dark"]
+MAX_NUM_POTION = 20
 
 
 class PotionInventory(BaseModel):
@@ -87,13 +88,14 @@ def get_bottle_plan():
         LEFT JOIN potion_entries ON potion_entries.potion_sku = potions.sku                      
         GROUP BY {day}_sold, potions.potion_type
         ORDER BY {day}_sold DESC, random()
+        LIMIT 7 
         """)).fetchall()
     current_ml = [global_inventory.num_red_ml, global_inventory.num_green_ml, global_inventory.num_blue_ml, global_inventory.num_dark_ml]
     # splits total_num_bottles to even amounts, tries to even out each color
     current_types = []
     num_bottles = {}
     for potion in potion_inventory:
-      num_each = 300 // len(potion_inventory) - potion.num_potion
+      num_each = MAX_NUM_POTION - potion.num_potion
       if num_each > 0:
         current_types.append(potion.potion_type)
         num_bottles[tuple(potion.potion_type)] = num_each
