@@ -118,7 +118,7 @@ def create_cart(new_cart: NewCart):
 def get_cart(cart_id: int):
   """ """
   with db.engine.begin() as connection:
-    day = convert_days[datetime.now().weekday()]
+    day = convert_days[datetime.utcnow().weekday()]
     message = ""
     cart = connection.execute(sqlalchemy.text("""
         SELECT *
@@ -192,7 +192,7 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         WHERE cart_id = :cart_id
         """), {"payment": cart_checkout.payment, "transaction_id": global_transaction_id, "cart_id": cart_id})
   with db.engine.begin() as connection:
-    day = convert_days[datetime.now().weekday()]
+    day = convert_days[datetime.utcnow().weekday()]
     total_potions_bought = 0
     total_gold_paid = 0
     cart = connection.execute(sqlalchemy.text("""

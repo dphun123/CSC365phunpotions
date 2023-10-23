@@ -72,7 +72,7 @@ def get_bottle_plan():
 
   # Initial logic: bottle all barrels into red potions.
   bottling_list = []
-  day = convert_days[datetime.now().weekday()]
+  day = convert_days[datetime.utcnow().weekday()]
   with db.engine.begin() as connection:
     global_inventory = connection.execute(sqlalchemy.text("""
         SELECT SUM(change_gold) as gold, SUM(change_red_ml) as num_red_ml,
