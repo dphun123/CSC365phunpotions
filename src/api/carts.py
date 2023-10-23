@@ -64,25 +64,25 @@ def search_orders(
     with db.engine.begin() as connection:
       where_message = ""
       if customer_name != "" and potion_sku != "":
-        where_message = f"WHERE carts.customer ILIKE '%{customer_name}%' AND cart_items.sku ILIKE '%{potion_sku}%'"
+        where_message = f"WHERE carts.customer ILIKE '{customer_name}' AND cart_items.sku ILIKE '{potion_sku}'"
       elif customer_name != "":
-        where_message = f"WHERE carts.customer ILIKE '%{customer_name}%'"
+        where_message = f"WHERE carts.customer ILIKE '{customer_name}'"
       elif potion_sku != "":
-        where_message = f"WHERE cart_items.sku ILIKE '%{potion_sku}%'"
-        cart_items = connection.execute(sqlalchemy.text(f"""
-            SELECT
-              cart_items.items_id as line_item_id,
-              cart_items.sku as item_sku,
-              carts.customer as customer_name,
-              cart_items.quantity as line_item_total,
-              global_inventory_transactions.created_at as timestamp
-            FROM cart_items
-            JOIN carts on cart_items.cart_id = carts.cart_id
-            JOIN global_inventory_transactions on carts.global_inventory_transaction_id = global_inventory_transactions.id
-            {where_message}
-            ORDER BY {sort_col} {sort_order}
-            LIMIT 5
-            """)).fetchall()
+        where_message = f"WHERE cart_items.sku ILIKE '{potion_sku}'"
+      cart_items = connection.execute(sqlalchemy.text(f"""
+          SELECT
+            cart_items.items_id as line_item_id,
+            cart_items.sku as item_sku,
+            carts.customer as customer_name,
+            cart_items.quantity as line_item_total,
+            global_inventory_transactions.created_at as timestamp
+          FROM cart_items
+          JOIN carts on cart_items.cart_id = carts.cart_id
+          JOIN global_inventory_transactions on carts.global_inventory_transaction_id = global_inventory_transactions.id
+          {where_message}
+          ORDER BY {sort_col.value} {sort_order.value}
+          LIMIT 5
+          """)).fetchall()
     results = []
     for item in cart_items:
       results.append({
