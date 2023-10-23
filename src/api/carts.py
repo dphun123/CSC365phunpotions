@@ -70,7 +70,7 @@ def search_orders(
         where_message = f"WHERE cart_items.sku ILIKE '%{potion_sku}%'"
         cart_items = connection.execute(sqlalchemy.text(f"""
             SELECT
-              cart_items.item_id as line_item_id,
+              cart_items.items_id as line_item_id,
               cart_items.sku as item_sku,
               carts.customer as customer_name,
               cart_items.quantity as line_item_total,
@@ -80,19 +80,21 @@ def search_orders(
             JOIN global_inventory_transactions on carts.global_inventory_transaction_id = global_inventory_transactions.id
             {where_message}
             ORDER BY {sort_col} {sort_order}
+            LIMIT 5
             """)).fetchall()
+    results = []
+    for item in cart_items:
+      results.append({
+                "line_item_id": item.line_item_id,
+                "item_sku": item.item_sku,
+                "customer_name": item.customer_name,
+                "line_item_total": item.line_item_total,
+                "timestamp": item.timestamp,
+            })
     return {
         "previous": "",
         "next": "",
-        "results": [
-            {
-                "line_item_id": cart_items.line_item_id,
-                "item_sku": cart_items.item_sku,
-                "customer_name": cart_items.customer_name,
-                "line_item_total": cart_items.line_item_total,
-                "timestamp": cart_items.timestamp,
-            }
-        ],
+        "results": results
     }
 
 

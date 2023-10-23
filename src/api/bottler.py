@@ -14,7 +14,7 @@ router = APIRouter(
 )
 
 colors = ["red", "green", "blue", "dark"]
-MAX_NUM_EACH = 30
+
 
 class PotionInventory(BaseModel):
   potion_type: list[int]
@@ -92,7 +92,7 @@ def get_bottle_plan():
     current_types = []
     num_bottles = {}
     for potion in potion_inventory:
-      num_each = MAX_NUM_EACH - potion.num_potion
+      num_each = 300 // len(potion_inventory) - potion.num_potion
       if num_each > 0:
         current_types.append(potion.potion_type)
         num_bottles[tuple(potion.potion_type)] = num_each
