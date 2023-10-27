@@ -69,6 +69,7 @@ def search_orders(
         where_message = f"WHERE carts.customer ILIKE '%{customer_name}%'"
       elif potion_sku != "":
         where_message = f"WHERE cart_items.sku ILIKE '%{potion_sku}%'"
+      count = connection.execute(sqlalchemy.text(f"SELECT COUNT(*) as count FROM cart_items {where_message}")).first().count
       cart_items = connection.execute(sqlalchemy.text(f"""
           SELECT
             cart_items.items_id as line_item_id,
@@ -83,6 +84,7 @@ def search_orders(
           {where_message}
           ORDER BY {sort_col.value} {sort_order.value}
           LIMIT 5
+          OFFSET {search_page}
           """)).fetchall()
     results = []
     for item in cart_items:
@@ -93,9 +95,14 @@ def search_orders(
                 "line_item_total": item.line_item_total,
                 "timestamp": item.timestamp,
             })
+    current = int(search_page)
+    previous = current - 5
+    previous = "" if previous < 0 else str(previous)
+    next = current + 5
+    next = "" if next > count else str(next) 
     return {
-        "previous": "",
-        "next": "",
+        "previous": previous,
+        "next": next,
         "results": results
     }
 
