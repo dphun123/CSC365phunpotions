@@ -64,13 +64,12 @@ def search_orders(
     with db.engine.begin() as connection:
       where_message = ""
       if customer_name != "" and potion_sku != "":
-        where_message = f"WHERE carts.customer ILIKE '%{customer_name}%' AND carts_items.sku ILIKE '%{potion_sku}%'"
+        where_message = f"WHERE carts.customer ILIKE '%{customer_name}%' AND cart_items.sku ILIKE '%{potion_sku}%'"
       elif customer_name != "":
         where_message = f"WHERE carts.customer ILIKE '%{customer_name}%'"
       elif potion_sku != "":
         where_message = f"WHERE cart_items.sku ILIKE '%{potion_sku}%'"
       current = 0 if (search_page == "") else int(search_page)
-      count = connection.execute(sqlalchemy.text(f"SELECT COUNT(*) as count FROM cart_items {where_message}")).first().count
       cart_items = connection.execute(sqlalchemy.text(f"""
           SELECT
             cart_items.items_id as line_item_id,
@@ -84,11 +83,11 @@ def search_orders(
           JOIN global_inventory_entries on global_inventory_entries.global_inventory_transaction_id = global_inventory_transactions.id
           {where_message}
           ORDER BY {sort_col.value} {sort_order.value}
-          LIMIT 5
+          LIMIT 6
           OFFSET {str(current)}
           """)).fetchall()
     results = []
-    for item in cart_items:
+    for item in cart_items[:-1]:
       results.append({
                 "line_item_id": item.line_item_id,
                 "item_sku": item.item_sku,
@@ -99,7 +98,7 @@ def search_orders(
     previous = current - 5
     previous = "" if previous < 0 else str(previous)
     next = current + 5
-    next = "" if next > count else str(next) 
+    next = "" if len(cart_items) < 6 else str(next) 
     return {
         "previous": previous,
         "next": next,
