@@ -87,14 +87,15 @@ def search_orders(
           OFFSET {str(current)}
           """)).fetchall()
     results = []
-    for item in cart_items[:-1]:
-      results.append({
-                "line_item_id": item.line_item_id,
-                "item_sku": item.item_sku,
-                "customer_name": item.customer_name,
-                "line_item_total": item.line_item_total,
-                "timestamp": item.timestamp,
-            })
+    for item in cart_items:
+      if len(results) < 5:
+        results.append({
+            "line_item_id": item.line_item_id,
+            "item_sku": item.item_sku,
+            "customer_name": item.customer_name,
+            "line_item_total": item.line_item_total,
+            "timestamp": item.timestamp,
+        })
     previous = current - 5
     previous = "" if previous < 0 else str(previous)
     next = current + 5
