@@ -88,34 +88,36 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
         """)).fetchall()
     current_gold = global_inventory.gold
     current_ml = [global_inventory.num_red_ml, global_inventory.num_green_ml, global_inventory.num_blue_ml, global_inventory.num_dark_ml]
-    for potion in potion_inventory:
-      for i in range(4):
-        current_ml[i] += potion.potion_type[i] * potion.num_potion
-    min_price = min(barrel.price for barrel in wholesale_catalog)
-    while current_gold >= min_price and len(buying_barrels) < len(wholesale_catalog):
-      bought = False
-      color_index = current_ml.index(min(current_ml))
-      priority_color = colors[color_index]
-      # loops through every barrel, assumes larger barrels comes first
-      for barrel in wholesale_catalog:
-        # if right color and can buy
-        if barrel.potion_type == color_to_potion[priority_color] and current_gold >= barrel.price:
-          # add to buying_barrels if not already in
-          if not any(buying_barrel["sku"] == barrel.sku for buying_barrel in buying_barrels):
-            buying_barrels.append({
-              "sku": barrel.sku,
-              "quantity": 1,
-            })
-          # if already in, increment quantity
-          else:
-            for buying_barrel in buying_barrels:
-              if buying_barrel["sku"] == barrel.sku and buying_barrel["quantity"] < barrel.quantity:
-                buying_barrel["quantity"] += 1
-          bought = True
-          current_gold -= barrel.price
-          current_ml[color_index] += barrel.ml_per_barrel
-          break
-      # ran out of color
-      if not bought:
-        current_ml.pop(color_index)
+    print(sum(current_ml))
+    if sum(current_ml) < 50000:
+      for potion in potion_inventory:
+        for i in range(4):
+          current_ml[i] += potion.potion_type[i] * potion.num_potion
+      min_price = min(barrel.price for barrel in wholesale_catalog)
+      while current_gold >= min_price and len(buying_barrels) < len(wholesale_catalog):
+        bought = False
+        color_index = current_ml.index(min(current_ml))
+        priority_color = colors[color_index]
+        # loops through every barrel, assumes larger barrels comes first
+        for barrel in wholesale_catalog:
+          # if right color and can buy
+          if barrel.potion_type == color_to_potion[priority_color] and current_gold >= barrel.price:
+            # add to buying_barrels if not already in
+            if not any(buying_barrel["sku"] == barrel.sku for buying_barrel in buying_barrels):
+              buying_barrels.append({
+                "sku": barrel.sku,
+                "quantity": 1,
+              })
+            # if already in, increment quantity
+            else:
+              for buying_barrel in buying_barrels:
+                if buying_barrel["sku"] == barrel.sku and buying_barrel["quantity"] < barrel.quantity:
+                  buying_barrel["quantity"] += 1
+            bought = True
+            current_gold -= barrel.price
+            current_ml[color_index] += barrel.ml_per_barrel
+            break
+        # ran out of color
+        if not bought:
+          current_ml.pop(color_index)
   return buying_barrels
