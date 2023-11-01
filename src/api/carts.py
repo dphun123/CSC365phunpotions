@@ -189,21 +189,22 @@ class CartCheckout(BaseModel):
 @router.post("/{cart_id}/checkout")
 def checkout(cart_id: int, cart_checkout: CartCheckout):
   """ """
-  # add payment to cart to confirm
-  with db.engine.begin() as connection:
-    global_transaction_id = connection.execute(sqlalchemy.text("""
-        INSERT INTO global_inventory_transactions DEFAULT VALUES
-        RETURNING id
-        """)).first().id
-    connection.execute(sqlalchemy.text("""
-        UPDATE carts
-        SET payment = :payment, global_inventory_transaction_id = :transaction_id
-        WHERE cart_id = :cart_id
-        """), {"payment": cart_checkout.payment, "transaction_id": global_transaction_id, "cart_id": cart_id})
   with db.engine.begin() as connection:
     day = convert_days[datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('US/Pacific')).weekday()]
     total_potions_bought = 0
     total_gold_paid = 0
+    global_transaction_id = connection.execute(sqlalchemy.text("""
+        WITH transaction AS (
+            INSERT INTO global_inventory_transactions DEFAULT VALUES
+            RETURNING id
+        )
+        UPDATE carts c
+        SET payment = :payment, global_inventory_transaction_id = t.id
+        FROM transaction t
+        WHERE c.cart_id = :cart_id
+        RETURNING t.id
+    """), {"payment": cart_checkout.payment, "cart_id": cart_id}).first().id
+    # get cart
     cart = connection.execute(sqlalchemy.text("""
         SELECT sku, quantity
         FROM cart_items
@@ -218,15 +219,16 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
       total_potions_bought += cart_items.quantity
       total_gold_paid += cart_items.quantity * getattr(potion, day + "_price")
       # update potion_inventory
-      potion_transaction_id = connection.execute(sqlalchemy.text("""
-          INSERT INTO potion_transactions (description)
-          VALUES (:description)
-          RETURNING id
-          """), {"description": get_cart(cart_id)}).first().id
       connection.execute(sqlalchemy.text("""
-          INSERT INTO potion_entries (potion_sku, change, potion_transaction_id)
-          VALUES (:potion_sku, :change, :transaction_id)
-          """), {"potion_sku": cart_items.sku, "change": -cart_items.quantity, "transaction_id": potion_transaction_id})
+        WITH transaction AS (
+            INSERT INTO potion_transactions (description)
+            VALUES (:description)
+            RETURNING id
+        )
+        INSERT INTO potion_entries (potion_sku, change, potion_transaction_id)
+        SELECT :potion_sku, :change, t.id
+        FROM transaction t
+          """), {"description": get_cart(cart_id), "potion_sku": cart_items.sku, "change": -cart_items.quantity})
       # update potions num_sold for day
       #TODO maybe make this have ledger? not necessary since already logged
       connection.execute(sqlalchemy.text(f"""
