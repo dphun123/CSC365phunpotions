@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 colors = ["red", "green", "blue", "dark"]
-MAX_NUM_POTION = 40
+MAX_NUM_POTION = 35
 
 
 class PotionInventory(BaseModel):
