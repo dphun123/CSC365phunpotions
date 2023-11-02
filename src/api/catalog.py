@@ -19,7 +19,7 @@ def get_catalog():
 
   # Can return a max of 20 items.
   with db.engine.begin() as connection:
-    day = convert_days[datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('US/Pacific')).weekday()]
+    day = convert_days[datetime.utcnow().weekday()]
     potion_inventory = connection.execute(sqlalchemy.text(f"""
         SELECT potions.sku, potions.{day}_price as price, potions.potion_type, COALESCE(SUM(change), 0) as num_potion
         FROM potions

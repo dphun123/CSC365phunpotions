@@ -127,7 +127,7 @@ def create_cart(new_cart: NewCart):
 def get_cart(cart_id: int):
   """ """
   with db.engine.begin() as connection:
-    day = convert_days[datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('US/Pacific')).weekday()]
+    day = convert_days[datetime.utcnow().weekday()]
     message = ""
     cart = connection.execute(sqlalchemy.text("""
         SELECT *
@@ -190,7 +190,7 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
   """ """
   with db.engine.begin() as connection:
-    day = convert_days[datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('US/Pacific')).weekday()]
+    day = convert_days[datetime.utcnow().weekday()]
     total_potions_bought = 0
     total_gold_paid = 0
     global_transaction_id = connection.execute(sqlalchemy.text("""
