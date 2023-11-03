@@ -229,13 +229,6 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         SELECT :potion_sku, :change, t.id
         FROM transaction t
           """), {"description": get_cart(cart_id), "potion_sku": cart_items.sku, "change": -cart_items.quantity})
-      # update potions num_sold for day
-      #TODO maybe make this have ledger? not necessary since already logged
-      connection.execute(sqlalchemy.text(f"""
-          UPDATE potions
-          SET {day}_sold = {day}_sold + :num_sold
-          WHERE sku = :sku
-          """), {"num_sold": cart_items.quantity, "sku": cart_items.sku})
     # update global_inventory
     connection.execute(sqlalchemy.text("""
         UPDATE global_inventory_transactions
