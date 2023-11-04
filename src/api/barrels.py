@@ -94,14 +94,15 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
     total_ml = sum(current_ml)
     min_price = min(barrel.price for barrel in wholesale_catalog)
     while current_gold >= min_price and len(buying_barrels) < len(wholesale_catalog) and \
-        len(current_ml) > 0 and (total_ml < 60000 or "LARGE" in wholesale_catalog[0].sku):
+        len(current_ml) > 0 and total_ml <= 330000:
       color_index = current_ml.index(min(current_ml))
       priority_color = colors[color_index]
       # loops through every barrel, assumes larger barrels comes first
       for barrel in wholesale_catalog:
         # if right color and can buy
         if barrel.potion_type == color_to_potion[priority_color] and current_gold >= barrel.price and \
-          (total_ml < 60000 or "LARGE" in barrel.sku):
+              ((total_ml < 330000 and "LARGE" in barrel.sku) or (total_ml < 180000 and "MEDIUM" in barrel.sku) or \
+              (total_ml < 40000 and "SMALL" in barrel.sku)):
           # add to buying_barrels if not already in
           if not any(buying_barrel["sku"] == barrel.sku for buying_barrel in buying_barrels):
             buying_barrels.append({
@@ -111,8 +112,10 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
           # if already in, increment quantity
           else:
             for buying_barrel in buying_barrels:
-              if buying_barrel["sku"] == barrel.sku and buying_barrel["quantity"] < barrel.quantity:
+              if buying_barrel["sku"] == barrel.sku:
                 buying_barrel["quantity"] += 1
+                if buying_barrel["quantity"] == barrel.quantity:
+                  current_ml.pop(color_index)
           current_gold -= barrel.price
           current_ml[color_index] += barrel.ml_per_barrel
           total_ml += barrel.ml_per_barrel
