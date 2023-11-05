@@ -228,13 +228,13 @@ def checkout(cart_id: int, cart_checkout: CartCheckout):
         INSERT INTO potion_entries (potion_sku, change, potion_transaction_id)
         SELECT :potion_sku, :change, t.id
         FROM transaction t
-          """), {"description": get_cart(cart_id), "potion_sku": cart_items.sku, "change": -cart_items.quantity})
+          """), {"description": f"sold {cart_items.quantity} {cart_items.sku}", "potion_sku": cart_items.sku, "change": -cart_items.quantity})
     # update global_inventory
     connection.execute(sqlalchemy.text("""
         UPDATE global_inventory_transactions
         SET description = :description
         WHERE id = :transaction_id
-        """), {"description": get_cart(cart_id), "transaction_id": global_transaction_id})
+        """), {"description": f"sold {cart_items.quantity} {cart_items.sku}", "transaction_id": global_transaction_id})
     connection.execute(sqlalchemy.text("""
         INSERT INTO global_inventory_entries (change_gold, global_inventory_transaction_id)
         VALUES (:total_gold_paid, :transaction_id)
