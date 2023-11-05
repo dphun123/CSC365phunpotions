@@ -33,7 +33,7 @@ def get_catalog():
         catalog.append({
           "sku": potion.sku,
           "name": potion.sku,
-          "quantity": potion.num_potion if potion.num_potion <= 10000 else 10000,
+          "quantity": 30,
           "price": potion.price,
           "potion_type": potion.potion_type,
         })
