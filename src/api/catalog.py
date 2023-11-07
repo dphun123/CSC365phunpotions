@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 import sqlalchemy
 from src import database as db
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 
@@ -19,7 +19,7 @@ def get_catalog():
 
   # Can return a max of 20 items.
   with db.engine.begin() as connection:
-    day = convert_days[datetime.utcnow().weekday()]
+    day = convert_days[(datetime.utcnow()+timedelta(hours=2)).weekday()]
     potion_inventory = connection.execute(sqlalchemy.text(f"""
         SELECT potions.sku, potions.{day}_price as price, potions.potion_type, COALESCE(SUM(change), 0) as num_potion
         FROM potions

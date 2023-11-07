@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from enum import Enum
 
@@ -127,7 +127,7 @@ def create_cart(new_cart: NewCart):
 def get_cart(cart_id: int):
   """ """
   with db.engine.begin() as connection:
-    day = convert_days[datetime.utcnow().weekday()]
+    day = convert_days[(datetime.utcnow()+timedelta(hours=2)).weekday()]
     message = ""
     cart = connection.execute(sqlalchemy.text("""
         SELECT *
@@ -190,7 +190,7 @@ class CartCheckout(BaseModel):
 def checkout(cart_id: int, cart_checkout: CartCheckout):
   """ """
   with db.engine.begin() as connection:
-    day = convert_days[datetime.utcnow().weekday()]
+    day = convert_days[(datetime.utcnow()+timedelta(hours=2)).weekday()]
     total_potions_bought = 0
     total_gold_paid = 0
     global_transaction_id = connection.execute(sqlalchemy.text("""

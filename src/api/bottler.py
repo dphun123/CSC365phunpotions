@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 
@@ -74,7 +74,7 @@ def get_bottle_plan():
 
   # Initial logic: bottle all barrels into red potions.
   bottling_list = []
-  day = convert_days[datetime.utcnow().weekday()]
+  day = convert_days[(datetime.utcnow()+timedelta(hours=2)).weekday()]
   with db.engine.begin() as connection:
     global_inventory = connection.execute(sqlalchemy.text("""
         SELECT SUM(change_gold) as gold, SUM(change_red_ml) as num_red_ml,
