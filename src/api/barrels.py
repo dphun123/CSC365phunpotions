@@ -72,6 +72,7 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
   """ """
   print(wholesale_catalog)
   buying_barrels = []
+  colors = ["red", "green", "blue", "dark"]
   with db.engine.begin() as connection:
     global_inventory = connection.execute(sqlalchemy.text("""
         SELECT
