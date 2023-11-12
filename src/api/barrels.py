@@ -103,8 +103,8 @@ def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
       for barrel in wholesale_catalog:
         # if right color and can buy
         if barrel.potion_type == color_to_potion[priority_color] and current_gold >= barrel.price and \
-              ((total_ml < 340000 and "LARGE" in barrel.sku) or (total_ml < 240000 and "MEDIUM" in barrel.sku) or \
-              (total_ml < 200000 and "SMALL" in barrel.sku)):
+              ((total_ml < 340000 and "LARGE" in barrel.sku) or (total_ml < 120000 and "MEDIUM" in barrel.sku) or \
+              (total_ml < 60000 and "SMALL" in barrel.sku)):
           # add to buying_barrels if not already in
           if not any(buying_barrel["sku"] == barrel.sku for buying_barrel in buying_barrels):
             buying_barrels.append({
