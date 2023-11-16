@@ -70,6 +70,7 @@ def post_deliver_barrels(barrels_delivered: list[Barrel]):
 @router.post("/plan")
 def get_wholesale_purchase_plan(wholesale_catalog: list[Barrel]):
   """ """
+  return []
   print(wholesale_catalog)
   buying_barrels = []
   colors = ["red", "green", "blue", "dark"]
